@@ -7,7 +7,7 @@ from thefuzz import process
 def get_url_content(url):
     res = requests.get(url)
     if not res.ok:
-        raise Exception(res.content)
+        raise Exception(res.status_code)
 
     return res.content
 
@@ -55,6 +55,7 @@ class Scraper:
                 elif self._type == "zielonyogrodek":
                     title = plant_a.findNextSibling().findChild("div", {"class": "title"})
                     plant_urls.append([title.text.strip(), plant_a.get("href")])
+
         return plant_urls
 
     def get_text(self, plant_name):
@@ -63,3 +64,52 @@ class Scraper:
         content = self._soup.find_all("p")
         text_content = list(itertools.chain.from_iterable([p.text.strip().split(". ") for p in content]))
         return text_content
+
+    def get_all_plants(self):
+        page_content = ""
+        if self._type == "lovethegarden":
+            page_content = get_url_content(self._base_url + self._catalog + "/?field_plant_category_target_id=All" + "&"
+                                           + "page=" + str(0))
+        # elif self._type == "zielonyogrodek":
+        #     page_content = get_url_content(self._base_url + self._catalog + "/strona/" + str(0 * 30))
+        self._set_soup(page_content)
+        plants_names = []
+        max_page_num = self._get_max_page_num()
+        for i in range(max_page_num):
+            if self._type == "lovethegarden":
+                page_content = get_url_content(self._base_url + self._catalog + "/?field_plant_category_target_id=All" +
+                                               "&" + "page=" + str(i))
+            # elif self._type == "zielonyogrodek":
+            #     page_content = get_url_content(self._base_url + self._catalog + "/strona/" + str(i * 30))
+            self._set_soup(page_content)
+            plants = self._soup.find_all(self._elem_type, {"class": self._elem_class})
+            for plant in plants:
+                plant_a = plant.findChild("a")
+                if plant_a:
+                    if self._type == "lovethegarden":
+                        plants_names.append(plant_a.get("title"))
+                    # elif self._type == "zielonyogrodek":
+                    #     title = plant_a.findNextSibling().findChild("div", {"class": "title"})
+                    #     plants_names.append(title.text.strip())
+        return plants_names
+
+    def _get_max_page_num(self):
+        res = ""
+
+        if self._type == "lovethegarden":
+            res = self._soup.find("li", {"class": "pager-listitem--icon-next"}) \
+                .findPreviousSibling() \
+                .findChild("a") \
+                .getText()
+        # elif self._type == "zielonyogrodek":
+        #     res = self._soup.find("nav", {"class": "pagination"}) \
+        #         .findChild("div") \
+        #         .findChildren("a") \
+        #         .pop() \
+        #         .getText()
+
+        return int(res.strip())
+
+
+all_plants = Scraper("https://www.lovethegarden.com", "lovethegarden").get_all_plants()
+all_plants = list(map(lambda x: x.lower(), all_plants))
