@@ -2,6 +2,7 @@ import itertools
 from bs4 import BeautifulSoup
 import requests
 from thefuzz import process
+import re
 
 
 def get_url_content(url):
@@ -10,6 +11,25 @@ def get_url_content(url):
         raise Exception(res.status_code)
 
     return res.content
+
+
+def _clean(text):
+    text = re.sub('\n ', '', str(text))
+    text = re.sub('\n', ' ', str(text))
+    text = re.sub("'s", '', str(text))
+    text = re.sub("-", ' ', str(text))
+    text = re.sub("— ", '', str(text))
+    text = re.sub('\"', '', str(text))
+
+    return text
+
+
+def _sentences(text):
+    text = re.split('[.?]', text)
+    clean_sent = []
+    for sent in text:
+        clean_sent.append(sent)
+    return clean_sent
 
 
 class Scraper:
@@ -61,8 +81,15 @@ class Scraper:
     def get_text(self, plant_name):
         page_content = get_url_content(self._base_url + self._get_plant_url(plant_name))
         self._set_soup(page_content)
-        content = self._soup.find_all("p")
-        text_content = list(itertools.chain.from_iterable([p.text.strip().split(". ") for p in content]))
+        content = ""
+        if self._type == "lovethegarden":
+            content = self._soup.find("article", {"class": "node--plant-full"}).find_all("p")
+        elif self._type == "zielonyogrodek":
+            content = self._soup.find("div", {"class": "article-text"}).find_all("p")
+
+        text_content = " ".join(list([p.text for p in content]))
+        text_content = _clean(text_content)
+        text_content = _sentences(text_content)
         return text_content
 
     def get_all_plants(self):

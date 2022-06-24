@@ -1,24 +1,29 @@
-from garden_voice_assistant.scraper import Scraper
-from garden_voice_assistant.text_processor import TextProcessor, get_info_from_text
+from scraper import Scraper
+from text_processor import InputProcessor, TextProcessor
 import pyttsx3 as tts
 import speech_recognition as sr
 
 
-def voice_assistant(text):
-    pr = TextProcessor(text)
-    plant = pr.get_plant()
-    param = pr.get_param()
+def voice_assistant(in_txt):
+    ipr = InputProcessor(in_txt)
+    plant = ipr.get_plant()
+    if plant is None:
+        plant = ipr.get_plant_not_detailed()
+
+    param = ipr.get_param()
     print(plant, param)
     try:
         scraper1 = Scraper("https://www.lovethegarden.com", "lovethegarden")
         txt = scraper1.get_text(plant)
-        res = get_info_from_text(txt, param)
+        tpr = TextProcessor(txt, param)
+        res = tpr.get_info_from_text()
         print("Lovethegarden")
     except Exception:
         try:
             scraper2 = Scraper("https://zielonyogrodek.pl", "zielonyogrodek")
             txt = scraper2.get_text(plant)
-            res = get_info_from_text(txt, param)
+            tpr = TextProcessor(txt, param)
+            res = tpr.get_info_from_text()
             print("Zielonyogrodek")
         except Exception:
             res = "Nie znam odpowiedzi"
