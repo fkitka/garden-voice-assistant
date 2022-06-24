@@ -1,0 +1,6 @@
+beautifulsoup4==4.11.1
+pyttsx3==2.90
+requests==2.25.1
+spacy==3.3.1
+SpeechRecognition==3.8.1
+thefuzz==0.19.0

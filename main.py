@@ -15,19 +15,24 @@ def voice_assistant(in_txt):
     try:
         scraper1 = Scraper("https://www.lovethegarden.com", "lovethegarden")
         txt = scraper1.get_text(plant)
+
         tpr = TextProcessor(txt, param)
         res = tpr.get_info_from_text()
-        print("Lovethegarden")
-    except Exception:
+        # print("Lovethegarden")
+    except Exception as e:
+        print("".join(e.args))
         try:
             scraper2 = Scraper("https://zielonyogrodek.pl", "zielonyogrodek")
             txt = scraper2.get_text(plant)
             tpr = TextProcessor(txt, param)
             res = tpr.get_info_from_text()
-            print("Zielonyogrodek")
-        except Exception:
+            # print("Zielonyogrodek")
+        except Exception as e:
+            print("".join(e.args))
             res = "Nie znam odpowiedzi"
-    print(res)
+    print("Odpowiedź: ")
+    for line in res.split(". "):
+        print(line.strip(), ".", sep="")
     return res
 
 

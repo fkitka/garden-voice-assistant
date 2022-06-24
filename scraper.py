@@ -97,8 +97,7 @@ class Scraper:
         if self._type == "lovethegarden":
             page_content = get_url_content(self._base_url + self._catalog + "/?field_plant_category_target_id=All" + "&"
                                            + "page=" + str(0))
-        # elif self._type == "zielonyogrodek":
-        #     page_content = get_url_content(self._base_url + self._catalog + "/strona/" + str(0 * 30))
+
         self._set_soup(page_content)
         plants_names = []
         max_page_num = self._get_max_page_num()
@@ -106,8 +105,7 @@ class Scraper:
             if self._type == "lovethegarden":
                 page_content = get_url_content(self._base_url + self._catalog + "/?field_plant_category_target_id=All" +
                                                "&" + "page=" + str(i))
-            # elif self._type == "zielonyogrodek":
-            #     page_content = get_url_content(self._base_url + self._catalog + "/strona/" + str(i * 30))
+
             self._set_soup(page_content)
             plants = self._soup.find_all(self._elem_type, {"class": self._elem_class})
             for plant in plants:
@@ -115,9 +113,7 @@ class Scraper:
                 if plant_a:
                     if self._type == "lovethegarden":
                         plants_names.append(plant_a.get("title"))
-                    # elif self._type == "zielonyogrodek":
-                    #     title = plant_a.findNextSibling().findChild("div", {"class": "title"})
-                    #     plants_names.append(title.text.strip())
+
         return plants_names
 
     def _get_max_page_num(self):
@@ -128,12 +124,6 @@ class Scraper:
                 .findPreviousSibling() \
                 .findChild("a") \
                 .getText()
-        # elif self._type == "zielonyogrodek":
-        #     res = self._soup.find("nav", {"class": "pagination"}) \
-        #         .findChild("div") \
-        #         .findChildren("a") \
-        #         .pop() \
-        #         .getText()
 
         return int(res.strip())
 
